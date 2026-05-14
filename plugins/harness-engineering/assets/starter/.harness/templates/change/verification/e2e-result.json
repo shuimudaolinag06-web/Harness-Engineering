@@ -1,0 +1,10 @@
+{
+  "status": "PENDING",
+  "command": "npm.cmd run verify:e2e",
+  "browser": null,
+  "totalTests": 0,
+  "passedTests": 0,
+  "failedTests": 0,
+  "coverage": [],
+  "notes": "Replace with executable E2E result before acceptance."
+}

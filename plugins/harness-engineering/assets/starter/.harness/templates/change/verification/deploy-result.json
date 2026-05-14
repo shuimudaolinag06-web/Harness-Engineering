@@ -1,0 +1,6 @@
+{
+  "status": "NOT_REQUIRED",
+  "environment": "local",
+  "smokeChecks": [],
+  "rollbackPlan": "No deployment performed."
+}

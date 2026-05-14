@@ -1,0 +1,33 @@
+{
+  "name": "harness-engineering",
+  "version": "0.1.0",
+  "description": "Installable Harness Engineering workflow pack with Chinese stage commands, reusable skills, templates, validators, and starter assets for auditable AI coding delivery.",
+  "author": {
+    "name": "Harness Engineering Team"
+  },
+  "license": "UNLICENSED",
+  "keywords": [
+    "harness",
+    "ai-coding",
+    "governance",
+    "workflow",
+    "quality-gates"
+  ],
+  "skills": "./skills/",
+  "interface": {
+    "displayName": "Harness Engineering",
+    "shortDescription": "Auditable AI coding workflow with Chinese stage commands.",
+    "longDescription": "A reusable Harness Engineering workflow plugin for planning, reviewing, validating, and auditing AI-assisted software delivery. It includes a Codex skill, starter .harness assets, validators, templates, and the harness CLI facade.",
+    "developerName": "Harness Engineering Team",
+    "category": "Productivity",
+    "capabilities": [
+      "Interactive",
+      "Write"
+    ],
+    "defaultPrompt": [
+      "用 Harness 流程配置这个需求",
+      "用 Harness 做需求分析",
+      "安装 Harness starter 到当前仓库"
+    ]
+  }
+}

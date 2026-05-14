@@ -1,0 +1,15 @@
+{
+  "type": "module",
+  "bin": {
+    "harness": "./scripts/harness-flow.mjs"
+  },
+  "scripts": {
+    "harness": "node scripts/harness-flow.mjs",
+    "validate": "node scripts/validate-harness.mjs",
+    "verify": "npm test && npm run validate",
+    "verify:harness": "node scripts/validate-harness.mjs"
+  },
+  "engines": {
+    "node": ">=20"
+  }
+}

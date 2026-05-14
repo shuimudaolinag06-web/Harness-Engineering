@@ -1,0 +1,866 @@
+{
+  "schemaVersion": "1.0.0",
+  "name": "enterprise-harness-10-stage-pipeline",
+  "iterationCaps": {
+    "requirementReview": 3,
+    "codeReview": 2,
+    "testReview": 2
+  },
+  "humanCheckpoints": [
+    "pending-requirement-decision",
+    "post-requirement-review",
+    "post-code-review",
+    "deployment-parameters",
+    "final-acceptance"
+  ],
+  "phases": [
+    {
+      "id": 1,
+      "name": "request-analysis",
+      "entryCriteria": [
+        "A user request or product requirement exists."
+      ],
+      "skills": [
+        ".harness/skills/request-analysis/SKILL.md"
+      ],
+      "artifacts": [
+        "request_analysis/spec.md",
+        "request_analysis/tasks.md",
+        "summary.md"
+      ],
+      "qualityGates": [
+        "spec has goal, scope, constraints, acceptance criteria, and open questions",
+        "tasks have owners, dependencies, and verification method"
+      ],
+      "rollback": "Clarify the requirement with the requester and update spec.md."
+    },
+    {
+      "id": 2,
+      "name": "requirement-review",
+      "entryCriteria": [
+        "spec.md and tasks.md exist."
+      ],
+      "skills": [
+        ".harness/skills/expert-reviewer/SKILL.md"
+      ],
+      "artifacts": [
+        "request_analysis/review/spec_review_v1.md"
+      ],
+      "qualityGates": [
+        "review result is APPROVED or REVISION REQUIRED",
+        "MUST FIX findings are resolved before implementation"
+      ],
+      "rollback": "Return to phase 1 when the review result is REVISION REQUIRED."
+    },
+    {
+      "id": 3,
+      "name": "implementation",
+      "entryCriteria": [
+        "Requirement review is APPROVED and user confirms the plan."
+      ],
+      "skills": [
+        ".harness/skills/coding-skill/SKILL.md"
+      ],
+      "artifacts": [
+        "implementation/notes.md",
+        "summary.md"
+      ],
+      "qualityGates": [
+        "implementation follows layer boundaries",
+        "changed behavior maps to an accepted task"
+      ],
+      "rollback": "Return to phase 1 for scope mismatch or phase 3 for compile errors."
+    },
+    {
+      "id": 4,
+      "name": "code-review",
+      "entryCriteria": [
+        "Implementation notes and code changes are available."
+      ],
+      "skills": [
+        ".harness/skills/expert-reviewer/SKILL.md"
+      ],
+      "artifacts": [
+        "implementation/review/code_review_v1.md"
+      ],
+      "qualityGates": [
+        "review contains verdict, findings, and evidence",
+        "MUST FIX findings are resolved before tests are accepted"
+      ],
+      "rollback": "Return to phase 3 when code review requires changes."
+    },
+    {
+      "id": 5,
+      "name": "unit-test-writing",
+      "entryCriteria": [
+        "Code review is APPROVED or all MUST FIX findings are resolved."
+      ],
+      "skills": [
+        ".harness/skills/unit-test-write/SKILL.md"
+      ],
+      "artifacts": [
+        "verification/test-plan.md",
+        "summary.md"
+      ],
+      "qualityGates": [
+        "tests are change-driven",
+        "critical branches and error paths are covered"
+      ],
+      "rollback": "Return to phase 3 if code is not testable without unsafe refactoring."
+    },
+    {
+      "id": 6,
+      "name": "unit-test-review",
+      "entryCriteria": [
+        "Test plan and test changes exist."
+      ],
+      "skills": [
+        ".harness/skills/expert-reviewer/SKILL.md"
+      ],
+      "artifacts": [
+        "verification/review/test_review_v1.md"
+      ],
+      "qualityGates": [
+        "tests assert behavior instead of implementation details",
+        "tests fail for the targeted defect or missing behavior"
+      ],
+      "rollback": "Return to phase 5 when test review requires changes."
+    },
+    {
+      "id": 7,
+      "name": "code-push-readiness",
+      "entryCriteria": [
+        "Implementation and tests are reviewed."
+      ],
+      "skills": [
+        ".harness/skills/unit-test-ci/SKILL.md"
+      ],
+      "artifacts": [
+        "verification/preflight.md"
+      ],
+      "qualityGates": [
+        "local validation command is documented",
+        "no unresolved MUST FIX finding remains"
+      ],
+      "rollback": "Return to the phase that owns the unresolved finding."
+    },
+    {
+      "id": 8,
+      "name": "ci-verification",
+      "entryCriteria": [
+        "Preflight is complete."
+      ],
+      "skills": [
+        ".harness/skills/unit-test-ci/SKILL.md"
+      ],
+      "artifacts": [
+        "verification/ci-result.json"
+      ],
+      "qualityGates": [
+        "status == SUCCESS",
+        "totalTests > 0",
+        "passedTests == totalTests"
+      ],
+      "rollback": "Return to phase 5 when totalTests is 0, phase 3 for compile errors, or the owning phase for failed assertions."
+    },
+    {
+      "id": 9,
+      "name": "deployment-verification",
+      "entryCriteria": [
+        "CI verification passed and deployment parameters are confirmed."
+      ],
+      "skills": [
+        ".harness/skills/deploy-verify/SKILL.md"
+      ],
+      "artifacts": [
+        "verification/deploy-result.json"
+      ],
+      "qualityGates": [
+        "environment is explicit",
+        "smoke checks pass",
+        "rollback plan is documented"
+      ],
+      "rollback": "Return to phase 3 for functional failures or halt for environment incidents."
+    },
+    {
+      "id": 10,
+      "name": "user-confirmation",
+      "entryCriteria": [
+        "Deployment verification passed or deployment is not required."
+      ],
+      "skills": [
+        ".harness/skills/expert-reviewer/SKILL.md"
+      ],
+      "artifacts": [
+        "acceptance/user-confirmation.md",
+        "summary.md"
+      ],
+      "qualityGates": [
+        "user-visible outcome is summarized",
+        "verification evidence is linked",
+        "follow-up harness improvements are captured"
+      ],
+      "rollback": "Return to phase 1 for requirement mismatch or create a new change for follow-up work."
+    }
+  ],
+  "extensionStages": [
+    {
+      "id": "government-enterprise-prototype",
+      "name": "Government/Enterprise Prototype Confirmation",
+      "compatiblePhases": [
+        1,
+        2,
+        3
+      ],
+      "trigger": "Use when stakeholders require high-fidelity prototype confirmation before business coding.",
+      "artifacts": [
+        "docs/prototype/page-map.md",
+        "docs/prototype/user-flow.md",
+        "docs/prototype/high-fidelity-prototype-spec.md",
+        "design/prototype-review-v1.md"
+      ],
+      "qualityGates": [
+        "prototype covers MVP pages, flows, states, and acceptance criteria",
+        "prototype review confirms no scope creep before coding"
+      ]
+    },
+    {
+      "id": "implementation-readiness",
+      "name": "Implementation Readiness Skeleton",
+      "compatiblePhases": [
+        3,
+        7
+      ],
+      "trigger": "Use before full business coding when contract, schema, scaffold, and runtime readiness need validation.",
+      "artifacts": [
+        "docs/api/<service>.openapi.yaml",
+        "backend/src/main/resources/db/migration/V1__*.sql",
+        "verification/environment-readiness.md"
+      ],
+      "qualityGates": [
+        "OpenAPI contract and database migration are stable enough for parallel work",
+        "backend, frontend, and dependency smoke checks are executable"
+      ]
+    },
+    {
+      "id": "frontend-special-review",
+      "name": "Frontend Code/Test Review",
+      "compatiblePhases": [
+        4,
+        6
+      ],
+      "trigger": "Use when frontend pages, API clients, or high-fidelity prototype implementation changes.",
+      "artifacts": [
+        "implementation/review/frontend_code_review_v1.md",
+        "verification/review/frontend_test_review_v1.md"
+      ],
+      "qualityGates": [
+        "frontend matches prototype, API contract, UX state requirements, and scope guardrails",
+        "frontend verification gaps are explicit before integration or acceptance"
+      ]
+    },
+    {
+      "id": "e2e-integration-gate",
+      "name": "Front-Back E2E Integration Gate",
+      "compatiblePhases": [
+        8,
+        9
+      ],
+      "trigger": "Use when backend, frontend, database, and proxy/runtime integration must be proven together.",
+      "artifacts": [
+        "verification/e2e-plan.md",
+        "verification/e2e-result.json",
+        "e2e/<flow>.spec.ts"
+      ],
+      "qualityGates": [
+        "runtime dependencies, backend, frontend, and proxy are reachable",
+        "browser E2E covers critical happy path and at least one critical failure path"
+      ]
+    },
+    {
+      "id": "acceptance-audit",
+      "name": "Acceptance Preparation and Final Delivery Audit",
+      "compatiblePhases": [
+        10
+      ],
+      "trigger": "Use before formal delivery audit, government/enterprise UAT, or workflow validation sign-off.",
+      "artifacts": [
+        "acceptance/acceptance_review_v1.md",
+        "acceptance/release_readiness_checklist.md",
+        "acceptance/final_delivery_audit_v1.md"
+      ],
+      "qualityGates": [
+        "MUST FIX, SHOULD FIX, and NICE TO HAVE findings are separated",
+        "final audit links requirements, design, code, tests, E2E, and executable validation evidence"
+      ]
+    },
+    {
+      "id": "sdd-change-governance",
+      "name": "SDD/OpenSpec Change Governance",
+      "compatiblePhases": [
+        1,
+        2,
+        3,
+        10
+      ],
+      "trigger": "Use when a change declares the SDD/OpenSpec/Superpowers governance version or needs auditable requirement, decision, context, and archive traceability.",
+      "artifacts": [
+        "request_analysis/context-pack.md",
+        "request_analysis/proposal.md",
+        "design/plan.md",
+        "acceptance/archive.md"
+      ],
+      "qualityGates": [
+        "loaded context, rules, code, documents, and decisions are recorded before design or implementation",
+        "proposal and plan separate goals, non-goals, risks, alternatives, validation, and rollback evidence",
+        "archive captures final decision, residual work, reuse lessons, and SHOULD FIX / NICE TO HAVE follow-up"
+      ]
+    },
+    {
+      "id": "tdd-execution-quality",
+      "name": "TDD Execution Quality",
+      "compatiblePhases": [
+        3,
+        4,
+        5,
+        6
+      ],
+      "trigger": "Use for high-risk implementation changes involving money, state machines, security, permissions, databases, public APIs, deployment, or equivalent risk evidence.",
+      "artifacts": [
+        "implementation/tdd-cycle-log.md",
+        "implementation/task-execution-plan.md",
+        "implementation/review/spec-compliance-review.md",
+        "implementation/review/code-quality-review.md"
+      ],
+      "qualityGates": [
+        "Red-Green-Refactor evidence is retained or an equivalent executable testing rationale is documented",
+        "task execution order, ownership boundaries, and validation method are explicit",
+        "spec compliance review and code quality review are both retained and cannot replace base requirement, code, test, CI, E2E, or final audit gates"
+      ]
+    },
+    {
+      "id": "lightweight-entry-governance",
+      "name": "Lightweight Entry Governance",
+      "compatiblePhases": [
+        1,
+        2,
+        7,
+        10
+      ],
+      "trigger": "Use at change intake when the team needs a simple entry decision, configurable gate profile, or auditable process trimming evidence.",
+      "artifacts": [
+        "risk/lightweight-entry-decision.md",
+        "risk/gate-profile-selection.md",
+        "acceptance/process-trim-audit.md"
+      ],
+      "qualityGates": [
+        "entry decision uses no more than five intake questions before selecting a profile",
+        "process trimming can combine evidence but cannot delete audit responsibility",
+        "low-risk changes keep Harness validation while high-risk changes inherit stricter riskRules"
+      ]
+    }
+  ],
+  "gateProfiles": [
+    {
+      "id": "full-audit",
+      "name": "Full Audit",
+      "costEstimate": "1.35x-1.60x",
+      "useCases": [
+        "regulated delivery",
+        "external government/enterprise acceptance",
+        "money/state/audit critical systems"
+      ],
+      "requiredCommands": [
+        "npm.cmd test",
+        "npm.cmd run validate",
+        "npm.cmd run verify"
+      ],
+      "minimumCommands": [
+        "npm.cmd run verify"
+      ],
+      "qualityGates": [
+        "all reviews are explicit",
+        "backend, frontend, E2E, CI, deploy, and acceptance evidence are retained"
+      ],
+      "notUseCases": [
+        "documentation-only or template-only updates without implementation risk",
+        "early exploration where formal acceptance is not required"
+      ],
+      "recommendedCommands": [
+        "npm.cmd run verify:all"
+      ],
+      "requiredEvidence": [
+        "risk/gate-profile-selection.md",
+        "request_analysis/review/spec_review_v1.md",
+        "implementation/review/code_review_v1.md",
+        "verification/review/test_review_v1.md",
+        "verification/ci-result.json",
+        "verification/deploy-result.json",
+        "acceptance/final_delivery_audit_v1.md"
+      ],
+      "combinableStages": [],
+      "nonSkippableStages": [
+        "request-analysis",
+        "requirement-review",
+        "code-review",
+        "unit-test-review",
+        "ci-verification",
+        "acceptance-audit",
+        "user-confirmation"
+      ]
+    },
+    {
+      "id": "balanced-enterprise",
+      "name": "Balanced Enterprise",
+      "costEstimate": "1.10x-1.25x",
+      "useCases": [
+        "internal enterprise systems",
+        "SaaS back-office",
+        "iterative delivery with audit needs"
+      ],
+      "requiredCommands": [
+        "npm.cmd run verify"
+      ],
+      "minimumCommands": [
+        "npm.cmd run verify"
+      ],
+      "qualityGates": [
+        "combine low-risk reviews without deleting reviewer evidence",
+        "keep executable backend/frontend/E2E gates for user-visible behavior"
+      ],
+      "notUseCases": [
+        "regulated or external acceptance that requires full traceability",
+        "money, security, database, public API, or deployment changes without risk-adaptive controls"
+      ],
+      "recommendedCommands": [
+        "npm.cmd run verify"
+      ],
+      "requiredEvidence": [
+        "risk/gate-profile-selection.md",
+        "request_analysis/review/spec_review_v1.md",
+        "implementation/review/code_review_v1.md",
+        "verification/ci-result.json",
+        "acceptance/final_delivery_audit_v1.md"
+      ],
+      "combinableStages": [
+        "requirement-review",
+        "code-review",
+        "unit-test-review",
+        "frontend-special-review"
+      ],
+      "nonSkippableStages": [
+        "request-analysis",
+        "requirement-review",
+        "ci-verification",
+        "user-confirmation"
+      ]
+    },
+    {
+      "id": "fast-iteration",
+      "name": "Fast Iteration",
+      "costEstimate": "0.75x-0.90x",
+      "useCases": [
+        "PoC",
+        "demo",
+        "internal tool exploration",
+        "early requirement discovery"
+      ],
+      "requiredCommands": [
+        "npm.cmd run validate"
+      ],
+      "minimumCommands": [
+        "npm.cmd run validate"
+      ],
+      "qualityGates": [
+        "scope guard and basic smoke/build checks remain executable",
+        "deferred reviews and tests are tracked explicitly"
+      ],
+      "notUseCases": [
+        "money, state-machine, security, permission, database, public API, deployment, or external acceptance changes",
+        "changes that need formal UAT, audit, or production rollback evidence"
+      ],
+      "recommendedCommands": [
+        "npm.cmd run validate"
+      ],
+      "requiredEvidence": [
+        "risk/lightweight-entry-decision.md",
+        "risk/gate-profile-selection.md",
+        "verification/ci-result.json or equivalent Harness validate evidence"
+      ],
+      "combinableStages": [
+        "requirement-review",
+        "code-review",
+        "unit-test-review",
+        "code-push-readiness"
+      ],
+      "nonSkippableStages": [
+        "request-analysis",
+        "requirement-review",
+        "ci-verification"
+      ]
+    },
+    {
+      "id": "government-enterprise-prototype-first",
+      "name": "Government/Enterprise Prototype First",
+      "costEstimate": "1.20x-1.45x",
+      "useCases": [
+        "government procurement",
+        "state-owned enterprise delivery",
+        "customer prototype sign-off before coding"
+      ],
+      "requiredCommands": [
+        "npm.cmd run validate",
+        "npm.cmd run verify"
+      ],
+      "minimumCommands": [
+        "npm.cmd run validate",
+        "npm.cmd run verify"
+      ],
+      "qualityGates": [
+        "prototype artifacts and prototype review are complete before business coding",
+        "frontend review checks prototype consistency before acceptance"
+      ],
+      "notUseCases": [
+        "internal-only changes with no prototype sign-off need",
+        "documentation-only or dry-run process changes"
+      ],
+      "recommendedCommands": [
+        "npm.cmd run verify"
+      ],
+      "requiredEvidence": [
+        "risk/gate-profile-selection.md",
+        "prototype/page-map.md",
+        "prototype/user-flow.md",
+        "prototype/high-fidelity-prototype-spec.md",
+        "design/prototype-review-v1.md",
+        "acceptance/final_delivery_audit_v1.md"
+      ],
+      "combinableStages": [
+        "government-enterprise-prototype",
+        "frontend-special-review"
+      ],
+      "nonSkippableStages": [
+        "request-analysis",
+        "requirement-review",
+        "government-enterprise-prototype",
+        "acceptance-audit",
+        "user-confirmation"
+      ]
+    },
+    {
+      "id": "risk-adaptive",
+      "name": "Risk Adaptive",
+      "costEstimate": "0.90x-1.40x",
+      "useCases": [
+        "mixed-risk product lines",
+        "multi-team delivery",
+        "mature engineering governance"
+      ],
+      "requiredCommands": [
+        "npm.cmd run validate"
+      ],
+      "minimumCommands": [
+        "npm.cmd run validate"
+      ],
+      "qualityGates": [
+        "risk tags decide review depth and verification command set",
+        "money, state transition, security, API, database, and deployment changes cannot skip review"
+      ],
+      "notUseCases": [
+        "teams without agreed risk tags or risk-rule ownership",
+        "single-path regulated delivery where full-audit is simpler"
+      ],
+      "recommendedCommands": [
+        "npm.cmd run verify"
+      ],
+      "requiredEvidence": [
+        "risk/lightweight-entry-decision.md",
+        "risk/gate-profile-selection.md",
+        "matched riskRules evidence",
+        "verification/ci-result.json",
+        "acceptance/final_delivery_audit_v1.md when required by riskRules"
+      ],
+      "combinableStages": [
+        "requirement-review",
+        "code-review",
+        "unit-test-review",
+        "frontend-special-review",
+        "implementation-readiness"
+      ],
+      "nonSkippableStages": [
+        "request-analysis",
+        "requirement-review",
+        "ci-verification"
+      ]
+    },
+    {
+      "id": "tdd-execution",
+      "name": "TDD Execution",
+      "costEstimate": "1.15x-1.35x",
+      "useCases": [
+        "high-risk implementation",
+        "money/state/security/database/API/deployment changes",
+        "changes requiring Superpowers-like execution evidence"
+      ],
+      "requiredCommands": [
+        "npm.cmd test",
+        "npm.cmd run validate",
+        "npm.cmd run verify"
+      ],
+      "minimumCommands": [
+        "npm.cmd run verify"
+      ],
+      "qualityGates": [
+        "TDD cycle log, task execution plan, spec compliance review, and code quality review are retained",
+        "TDD execution adds evidence and never replaces requirement review, code review, test review, CI, E2E, or final audit"
+      ],
+      "notUseCases": [
+        "documentation, template-only, process-copy, or dry-run changes",
+        "low-risk UI copy or non-behavioral changes with no implementation risk"
+      ],
+      "recommendedCommands": [
+        "npm.cmd run verify"
+      ],
+      "requiredEvidence": [
+        "implementation/tdd-cycle-log.md",
+        "implementation/task-execution-plan.md",
+        "implementation/review/spec-compliance-review.md",
+        "implementation/review/code-quality-review.md",
+        "verification/ci-result.json"
+      ],
+      "combinableStages": [
+        "unit-test-writing",
+        "unit-test-review",
+        "tdd-execution-quality"
+      ],
+      "nonSkippableStages": [
+        "request-analysis",
+        "requirement-review",
+        "code-review",
+        "unit-test-review",
+        "ci-verification",
+        "tdd-execution-quality"
+      ]
+    }
+  ],
+  "riskRules": [
+    {
+      "id": "money-or-financial-calculation",
+      "riskTags": [
+        "money",
+        "financial-calculation"
+      ],
+      "disallowedProfiles": [
+        "fast-iteration"
+      ],
+      "minimumCommands": [
+        "npm.cmd run verify"
+      ],
+      "requiredExtensionStages": [
+        "implementation-readiness",
+        "tdd-execution-quality",
+        "e2e-integration-gate",
+        "acceptance-audit"
+      ],
+      "requiredReviews": [
+        "code-review",
+        "unit-test-review",
+        "acceptance-audit"
+      ],
+      "qualityGates": [
+        "money and financial calculations cannot use validate-only gates",
+        "financial behavior must keep executable tests, TDD evidence, and acceptance evidence"
+      ]
+    },
+    {
+      "id": "state-machine-transition",
+      "riskTags": [
+        "state-machine",
+        "status-transition"
+      ],
+      "disallowedProfiles": [
+        "fast-iteration"
+      ],
+      "minimumCommands": [
+        "npm.cmd run verify"
+      ],
+      "requiredExtensionStages": [
+        "implementation-readiness",
+        "tdd-execution-quality",
+        "e2e-integration-gate",
+        "acceptance-audit"
+      ],
+      "requiredReviews": [
+        "code-review",
+        "unit-test-review"
+      ],
+      "qualityGates": [
+        "state transition rules must be reviewed independently",
+        "critical transition paths must have executable regression tests and TDD cycle evidence"
+      ]
+    },
+    {
+      "id": "security-or-permission-boundary",
+      "riskTags": [
+        "security",
+        "permission",
+        "permission-boundary",
+        "authorization"
+      ],
+      "disallowedProfiles": [
+        "fast-iteration"
+      ],
+      "minimumCommands": [
+        "npm.cmd run verify"
+      ],
+      "requiredExtensionStages": [
+        "tdd-execution-quality",
+        "acceptance-audit"
+      ],
+      "requiredReviews": [
+        "code-review",
+        "unit-test-review",
+        "acceptance-audit"
+      ],
+      "qualityGates": [
+        "security and permission changes cannot skip review evidence",
+        "authorization behavior must be covered by executable validation and TDD evidence"
+      ]
+    },
+    {
+      "id": "database-or-data-migration",
+      "riskTags": [
+        "database",
+        "data-migration",
+        "schema"
+      ],
+      "disallowedProfiles": [
+        "fast-iteration"
+      ],
+      "minimumCommands": [
+        "npm.cmd run verify"
+      ],
+      "requiredExtensionStages": [
+        "implementation-readiness",
+        "tdd-execution-quality",
+        "e2e-integration-gate"
+      ],
+      "requiredReviews": [
+        "code-review",
+        "unit-test-review"
+      ],
+      "qualityGates": [
+        "database changes require migration readiness evidence",
+        "data migration risk must include rollback or recovery guidance and executable test evidence"
+      ]
+    },
+    {
+      "id": "public-api-contract",
+      "riskTags": [
+        "public-api",
+        "openapi",
+        "contract"
+      ],
+      "disallowedProfiles": [
+        "fast-iteration"
+      ],
+      "minimumCommands": [
+        "npm.cmd run verify"
+      ],
+      "requiredExtensionStages": [
+        "implementation-readiness",
+        "tdd-execution-quality",
+        "e2e-integration-gate"
+      ],
+      "requiredReviews": [
+        "code-review",
+        "unit-test-review"
+      ],
+      "qualityGates": [
+        "API contract changes require contract readiness evidence",
+        "frontend/backend compatibility must be executable or explicitly stubbed and covered by execution evidence"
+      ]
+    },
+    {
+      "id": "deployment-runtime-change",
+      "riskTags": [
+        "deployment",
+        "runtime",
+        "infrastructure"
+      ],
+      "disallowedProfiles": [
+        "fast-iteration"
+      ],
+      "minimumCommands": [
+        "npm.cmd run verify"
+      ],
+      "requiredExtensionStages": [
+        "tdd-execution-quality",
+        "e2e-integration-gate",
+        "acceptance-audit"
+      ],
+      "requiredReviews": [
+        "code-review",
+        "unit-test-review",
+        "acceptance-audit"
+      ],
+      "qualityGates": [
+        "runtime changes require environment readiness or deploy verification evidence",
+        "rollback plan must be documented before acceptance and high-risk execution evidence must be retained"
+      ]
+    },
+    {
+      "id": "government-enterprise-acceptance",
+      "riskTags": [
+        "government-acceptance",
+        "enterprise-uat",
+        "external-acceptance"
+      ],
+      "disallowedProfiles": [
+        "fast-iteration"
+      ],
+      "minimumCommands": [
+        "npm.cmd run validate",
+        "npm.cmd run verify"
+      ],
+      "requiredExtensionStages": [
+        "government-enterprise-prototype",
+        "acceptance-audit"
+      ],
+      "requiredReviews": [
+        "requirement-review",
+        "code-review",
+        "acceptance-audit"
+      ],
+      "qualityGates": [
+        "prototype or acceptance evidence must be retained before formal UAT",
+        "MUST FIX, SHOULD FIX, and NICE TO HAVE findings must be separated"
+      ]
+    },
+    {
+      "id": "low-risk-documentation-or-template",
+      "riskTags": [
+        "documentation",
+        "template-only",
+        "process-copy",
+        "dry-run"
+      ],
+      "allowedProfiles": [
+        "fast-iteration",
+        "balanced-enterprise"
+      ],
+      "minimumCommands": [
+        "npm.cmd run validate"
+      ],
+      "requiredExtensionStages": [],
+      "requiredReviews": [
+        "requirement-review"
+      ],
+      "qualityGates": [
+        "documentation-only changes still require Harness validation",
+        "documentation, template-only, process-copy, and dry-run changes are not forced through TDD execution quality gates",
+        "deferred review or verification work must be tracked explicitly"
+      ]
+    }
+  ]
+}
