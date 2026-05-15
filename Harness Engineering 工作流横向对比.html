@@ -1,0 +1,992 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Harness Engineering 与主流 AI Coding 工作流横向对比</title>
+  <style>
+    :root {
+      color-scheme: light;
+      --ink: #17202a;
+      --muted: #5d6673;
+      --line: #d9dee7;
+      --paper: #f7f8fb;
+      --card: #ffffff;
+      --green: #177b52;
+      --blue: #1f6fb2;
+      --red: #b0443e;
+      --gold: #946200;
+      --teal: #00777c;
+      --violet: #7353a6;
+      --gray: #59616c;
+      --shadow: 0 18px 50px rgba(27, 39, 53, 0.12);
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      font-family: "Microsoft YaHei", "PingFang SC", "Segoe UI", Arial, sans-serif;
+      color: var(--ink);
+      background:
+        linear-gradient(180deg, #fff 0, #f4f6fa 42%, #eef2f7 100%);
+      line-height: 1.55;
+    }
+
+    a {
+      color: #135ea8;
+      text-decoration: none;
+    }
+
+    a:hover {
+      text-decoration: underline;
+    }
+
+    .page {
+      max-width: 1320px;
+      margin: 0 auto;
+      padding: 32px 22px 56px;
+    }
+
+    .hero {
+      display: grid;
+      grid-template-columns: minmax(0, 1.35fr) minmax(280px, 0.65fr);
+      gap: 24px;
+      align-items: stretch;
+      margin-bottom: 24px;
+    }
+
+    .hero-main {
+      padding: 32px;
+      background: #ffffff;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      box-shadow: var(--shadow);
+    }
+
+    .hero-main h1 {
+      margin: 0 0 14px;
+      font-size: clamp(28px, 4vw, 48px);
+      letter-spacing: 0;
+      line-height: 1.12;
+    }
+
+    .hero-main p {
+      max-width: 820px;
+      margin: 0;
+      font-size: 17px;
+      color: var(--muted);
+    }
+
+    .hero-side {
+      padding: 24px;
+      background: #101923;
+      color: #f7fbff;
+      border-radius: 8px;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      gap: 18px;
+    }
+
+    .hero-side h2 {
+      margin: 0 0 10px;
+      font-size: 18px;
+    }
+
+    .hero-side p {
+      margin: 0;
+      color: #c8d4e3;
+    }
+
+    .verdict {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 12px;
+      margin-top: 22px;
+    }
+
+    .verdict-item {
+      border-left: 4px solid var(--green);
+      background: #eef8f2;
+      padding: 14px;
+      border-radius: 6px;
+    }
+
+    .verdict-item:nth-child(2) {
+      border-left-color: var(--blue);
+      background: #eef5fb;
+    }
+
+    .verdict-item:nth-child(3) {
+      border-left-color: var(--gold);
+      background: #fbf6e8;
+    }
+
+    .verdict-item strong {
+      display: block;
+      margin-bottom: 4px;
+      font-size: 15px;
+    }
+
+    .verdict-item span {
+      display: block;
+      color: #3e4a57;
+      font-size: 14px;
+    }
+
+    .meta {
+      display: grid;
+      gap: 10px;
+    }
+
+    .meta-row {
+      display: grid;
+      grid-template-columns: 88px 1fr;
+      gap: 12px;
+      border-bottom: 1px solid rgba(255,255,255,0.16);
+      padding-bottom: 10px;
+      font-size: 14px;
+    }
+
+    .meta-row:last-child {
+      border-bottom: 0;
+      padding-bottom: 0;
+    }
+
+    .meta-row b {
+      color: #fff;
+    }
+
+    .section {
+      margin-top: 30px;
+    }
+
+    .section h2 {
+      font-size: 24px;
+      margin: 0 0 14px;
+    }
+
+    .note {
+      padding: 16px 18px;
+      border: 1px solid #cad8ea;
+      border-radius: 8px;
+      background: #f3f8ff;
+      color: #32455a;
+      margin-bottom: 18px;
+    }
+
+    .score-grid {
+      display: grid;
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+      gap: 12px;
+    }
+
+    .score-card {
+      background: var(--card);
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      padding: 16px;
+    }
+
+    .score-card .k {
+      color: var(--muted);
+      font-size: 13px;
+      margin-bottom: 6px;
+    }
+
+    .score-card .v {
+      font-size: 22px;
+      font-weight: 700;
+    }
+
+    .scheme-scroll {
+      overflow-x: auto;
+      padding-bottom: 8px;
+    }
+
+    .scheme-row {
+      display: grid;
+      grid-template-columns: repeat(7, minmax(280px, 1fr));
+      gap: 14px;
+      min-width: 2020px;
+    }
+
+    .scheme {
+      background: var(--card);
+      border: 1px solid var(--line);
+      border-top: 6px solid var(--gray);
+      border-radius: 8px;
+      box-shadow: 0 8px 26px rgba(37, 49, 63, 0.07);
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+    }
+
+    .scheme.harness { border-top-color: var(--green); }
+    .scheme.specflow { border-top-color: var(--blue); }
+    .scheme.speckit { border-top-color: var(--violet); }
+    .scheme.bmad { border-top-color: var(--red); }
+    .scheme.agentos { border-top-color: var(--teal); }
+    .scheme.kiro { border-top-color: var(--gold); }
+    .scheme.taskmaster { border-top-color: var(--gray); }
+
+    .scheme header {
+      padding: 18px 18px 8px;
+    }
+
+    .scheme h3 {
+      margin: 0 0 8px;
+      font-size: 20px;
+      line-height: 1.2;
+    }
+
+    .tagline {
+      min-height: 48px;
+      margin: 0;
+      color: var(--muted);
+      font-size: 14px;
+    }
+
+    .pillbar {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px;
+      margin-top: 12px;
+    }
+
+    .pill {
+      display: inline-flex;
+      align-items: center;
+      min-height: 24px;
+      padding: 3px 8px;
+      border-radius: 999px;
+      background: #edf0f4;
+      color: #384250;
+      font-size: 12px;
+      white-space: nowrap;
+    }
+
+    .scheme .body {
+      padding: 0 18px 18px;
+      display: grid;
+      gap: 14px;
+    }
+
+    .block h4 {
+      margin: 0 0 6px;
+      font-size: 13px;
+      color: #1f2937;
+      text-transform: uppercase;
+      letter-spacing: 0;
+    }
+
+    .block p,
+    .block ul {
+      margin: 0;
+      color: #43505f;
+      font-size: 14px;
+    }
+
+    .block ul {
+      padding-left: 18px;
+    }
+
+    .block li {
+      margin: 4px 0;
+    }
+
+    .flow {
+      border: 1px solid #e1e6ef;
+      background: #fbfcff;
+      border-radius: 6px;
+      padding: 10px;
+      font-size: 13px;
+      color: #344154;
+    }
+
+    .rating {
+      display: grid;
+      gap: 8px;
+    }
+
+    .rate-line {
+      display: grid;
+      grid-template-columns: 88px 1fr 28px;
+      gap: 8px;
+      align-items: center;
+      font-size: 12px;
+      color: #4c5765;
+    }
+
+    .bar {
+      height: 8px;
+      border-radius: 999px;
+      background: #e4e8ef;
+      overflow: hidden;
+    }
+
+    .bar span {
+      display: block;
+      height: 100%;
+      background: #53657b;
+    }
+
+    .harness .bar span { background: var(--green); }
+    .specflow .bar span { background: var(--blue); }
+    .speckit .bar span { background: var(--violet); }
+    .bmad .bar span { background: var(--red); }
+    .agentos .bar span { background: var(--teal); }
+    .kiro .bar span { background: var(--gold); }
+    .taskmaster .bar span { background: var(--gray); }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      background: #fff;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      overflow: hidden;
+    }
+
+    th,
+    td {
+      padding: 12px 14px;
+      border-bottom: 1px solid var(--line);
+      text-align: left;
+      vertical-align: top;
+      font-size: 14px;
+    }
+
+    th {
+      background: #edf1f6;
+      color: #243142;
+      font-size: 13px;
+    }
+
+    tr:last-child td {
+      border-bottom: 0;
+    }
+
+    .fit-grid {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 14px;
+    }
+
+    .fit-card {
+      background: #fff;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      padding: 18px;
+    }
+
+    .fit-card h3 {
+      margin: 0 0 8px;
+      font-size: 17px;
+    }
+
+    .fit-card p {
+      margin: 0;
+      color: var(--muted);
+      font-size: 14px;
+    }
+
+    .source-list {
+      columns: 2;
+      column-gap: 28px;
+      background: #fff;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      padding: 18px 22px;
+    }
+
+    .source-list li {
+      break-inside: avoid;
+      margin-bottom: 8px;
+      color: #44505f;
+      font-size: 14px;
+    }
+
+    .footer {
+      margin-top: 26px;
+      color: var(--muted);
+      font-size: 13px;
+    }
+
+    @media (max-width: 980px) {
+      .hero {
+        grid-template-columns: 1fr;
+      }
+
+      .verdict,
+      .score-grid,
+      .fit-grid {
+        grid-template-columns: 1fr;
+      }
+
+      .source-list {
+        columns: 1;
+      }
+    }
+  </style>
+</head>
+<body>
+  <main class="page">
+    <section class="hero">
+      <div class="hero-main">
+        <h1>Harness Engineering 与主流 AI Coding 工作流横向对比</h1>
+        <p>
+          本页比较 Harness Engineering 标准插件、Spec Workflow MCP、GitHub Spec Kit、BMAD Method、Agent OS、Kiro Specs 和 Task Master。重点不是谁“更强”，而是它们分别解决哪一层问题，以及你的 Harness Engineering 应该如何定位、组合和演进。
+        </p>
+        <div class="verdict">
+          <div class="verdict-item">
+            <strong>一句话结论</strong>
+            <span>Harness Engineering 更像企业交付治理层，可以吸收其他 spec 或 task 工具的产出，再统一做风险、评审、验证和审计。</span>
+          </div>
+          <div class="verdict-item">
+            <strong>最强差异点</strong>
+            <span>10 阶段审计链、riskTags、gateProfile、extensionStages、validator、执行与评审分离。</span>
+          </div>
+          <div class="verdict-item">
+            <strong>当前短板</strong>
+            <span>生态、可视化、社区成熟度和一键安装体验还弱于 BMAD、Spec Kit、Spec Workflow MCP 这类成熟项目。</span>
+          </div>
+        </div>
+      </div>
+      <aside class="hero-side">
+        <div>
+          <h2>评估口径</h2>
+          <p>截至 2026-05-14，基于本仓库插件资产与公开官方资料整理。评分是相对判断，适合做方案选型和产品定位，不代表权威基准测试。</p>
+        </div>
+        <div class="meta">
+          <div class="meta-row"><b>对比对象</b><span>7 个 AI Coding 工作流</span></div>
+          <div class="meta-row"><b>核心维度</b><span>流程深度、审计、执行、评审、验证、上手成本、生态</span></div>
+          <div class="meta-row"><b>推荐定位</b><span>Harness 作为 enterprise delivery harness，而不是单纯 spec 生成器</span></div>
+        </div>
+      </aside>
+    </section>
+
+    <section class="section">
+      <h2>总体判断</h2>
+      <div class="score-grid">
+        <div class="score-card">
+          <div class="k">Harness 最适合</div>
+          <div class="v">高风险交付</div>
+        </div>
+        <div class="score-card">
+          <div class="k">Spec Kit 最适合</div>
+          <div class="v">规范驱动开发</div>
+        </div>
+        <div class="score-card">
+          <div class="k">BMAD 最适合</div>
+          <div class="v">多角色规划</div>
+        </div>
+        <div class="score-card">
+          <div class="k">Task Master 最适合</div>
+          <div class="v">任务拆解跟踪</div>
+        </div>
+      </div>
+    </section>
+
+    <section class="section">
+      <h2>每个方案一栏对比</h2>
+      <div class="note">
+        阅读建议：横向看每一栏的“定位”和“慎用场景”。如果团队目标是企业级可审计交付，Harness Engineering 的价值更接近“流程与证据总控”；如果目标是先把需求变成 spec，Spec Kit、Spec Workflow MCP、Kiro 会更快。
+      </div>
+      <div class="scheme-scroll" aria-label="横向对比卡片">
+        <div class="scheme-row">
+          <article class="scheme harness">
+            <header>
+              <h3>Harness Engineering 标准插件</h3>
+              <p class="tagline">企业级 AI Coding 交付治理层，把需求、实现、评审、测试、CI、部署验证和最终审计串成可验证链路。</p>
+              <div class="pillbar">
+                <span class="pill">本地插件</span>
+                <span class="pill">中文命令</span>
+                <span class="pill">风险自适应</span>
+                <span class="pill">审计证据</span>
+              </div>
+            </header>
+            <div class="body">
+              <div class="block">
+                <h4>典型流程</h4>
+                <div class="flow">流程配置 → 变更初始化 → 需求分析 → 需求评审 → 设计准备 → 实现 → 代码评审 → 测试与 CI → 部署验证 → 最终审计</div>
+              </div>
+              <div class="block">
+                <h4>优点</h4>
+                <ul>
+                  <li>覆盖完整交付链，不只覆盖 spec 阶段。</li>
+                  <li>riskTags、gateProfile、extensionStages 能区分轻量和加严流程。</li>
+                  <li>强制执行 Agent 与评审 Agent 或评审流程分离。</li>
+                  <li>证据落在 `.harness/changes/&lt;change-id&gt;/`，适合审计追溯。</li>
+                  <li>validator 能把部分质量门禁变成可执行检查。</li>
+                </ul>
+              </div>
+              <div class="block">
+                <h4>短板</h4>
+                <ul>
+                  <li>生态和社区还在第一版阶段。</li>
+                  <li>缺少 dashboard、任务状态 UI、IDE 原生体验。</li>
+                  <li>安装脚本和中文资产还需要打磨编码、版本升级和冲突合并体验。</li>
+                  <li>流程偏严，新人需要好的 README、skill 和命令封装降低心智负担。</li>
+                </ul>
+              </div>
+              <div class="block">
+                <h4>适用场景</h4>
+                <p>政企交付、金融金额计算、权限安全、数据库 migration、生产部署、外部验收、多团队协作、需要交付审计的 AI Coding 场景。</p>
+              </div>
+              <div class="block">
+                <h4>慎用场景</h4>
+                <p>极小个人脚本、一次性 demo、无需留痕的探索性编码。此时可只用 fast-iteration，但仍保留最低审计责任。</p>
+              </div>
+              <div class="rating">
+                <div class="rate-line"><span>审计治理</span><div class="bar"><span style="width: 96%"></span></div><b>5</b></div>
+                <div class="rate-line"><span>上手效率</span><div class="bar"><span style="width: 70%"></span></div><b>3.5</b></div>
+                <div class="rate-line"><span>生态成熟</span><div class="bar"><span style="width: 42%"></span></div><b>2</b></div>
+                <div class="rate-line"><span>企业适配</span><div class="bar"><span style="width: 94%"></span></div><b>5</b></div>
+              </div>
+            </div>
+          </article>
+
+          <article class="scheme specflow">
+            <header>
+              <h3>Spec Workflow MCP</h3>
+              <p class="tagline">MCP server 形态的 spec-driven 工作流，强调需求、设计、任务、实现的顺序推进、审批和可视化进度。</p>
+              <div class="pillbar">
+                <span class="pill">MCP</span>
+                <span class="pill">Dashboard</span>
+                <span class="pill">Approval</span>
+                <span class="pill">多工具</span>
+              </div>
+            </header>
+            <div class="body">
+              <div class="block">
+                <h4>典型流程</h4>
+                <div class="flow">Requirements → Design → Tasks → Implementation，配合 dashboard 做进度与审批管理。</div>
+              </div>
+              <div class="block">
+                <h4>优点</h4>
+                <ul>
+                  <li>作为 MCP server，接入 Claude、Cursor、Codex 等工具较自然。</li>
+                  <li>dashboard 和审批系统对团队可见性很友好。</li>
+                  <li>比纯文档模板更容易让 AI 按阶段推进。</li>
+                  <li>适合将 spec 工作流产品化给个人或小团队使用。</li>
+                </ul>
+              </div>
+              <div class="block">
+                <h4>短板</h4>
+                <ul>
+                  <li>重心在 spec 和任务流，不是企业全链路交付审计。</li>
+                  <li>高风险规则、部署验收、失败沉淀等治理能力需要二次扩展。</li>
+                  <li>依赖 MCP 服务和 dashboard，运维形态比纯文件资产更重。</li>
+                  <li>GPL-3.0 许可对部分闭源商业集成需要谨慎评估。</li>
+                </ul>
+              </div>
+              <div class="block">
+                <h4>适用场景</h4>
+                <p>希望快速获得 spec 工作流、任务追踪、审批和可视化面板的团队，尤其是 MCP 生态用户。</p>
+              </div>
+              <div class="block">
+                <h4>慎用场景</h4>
+                <p>对合规审计、部署验证、风险分级、评审分离有硬要求的企业交付场景，需要额外治理层。</p>
+              </div>
+              <div class="rating">
+                <div class="rate-line"><span>审计治理</span><div class="bar"><span style="width: 60%"></span></div><b>3</b></div>
+                <div class="rate-line"><span>上手效率</span><div class="bar"><span style="width: 78%"></span></div><b>4</b></div>
+                <div class="rate-line"><span>生态成熟</span><div class="bar"><span style="width: 78%"></span></div><b>4</b></div>
+                <div class="rate-line"><span>企业适配</span><div class="bar"><span style="width: 64%"></span></div><b>3</b></div>
+              </div>
+            </div>
+          </article>
+
+          <article class="scheme speckit">
+            <header>
+              <h3>GitHub Spec Kit</h3>
+              <p class="tagline">开源的 Spec-Driven Development toolkit，强调先定义要构建什么，再生成 plan、tasks 和实现。</p>
+              <div class="pillbar">
+                <span class="pill">SDD</span>
+                <span class="pill">Specify CLI</span>
+                <span class="pill">多 Agent 集成</span>
+                <span class="pill">MIT</span>
+              </div>
+            </header>
+            <div class="body">
+              <div class="block">
+                <h4>典型流程</h4>
+                <div class="flow">Constitution → Specify → Plan → Tasks → Implement，可通过 extensions 和 presets 扩展。</div>
+              </div>
+              <div class="block">
+                <h4>优点</h4>
+                <ul>
+                  <li>方法论清晰，是当前 SDD 代表性工具之一。</li>
+                  <li>支持大量 AI coding agent 集成，社区扩展和 presets 体系活跃。</li>
+                  <li>constitution、spec、plan、tasks 的文档链路适合规范驱动开发。</li>
+                  <li>MIT 许可对企业采用友好。</li>
+                </ul>
+              </div>
+              <div class="block">
+                <h4>短板</h4>
+                <ul>
+                  <li>主要解决 spec 到 implement，不天然覆盖部署验证、UAT 和最终交付审计。</li>
+                  <li>强依赖用户和 Agent 正确理解 SDD，复杂项目可能产生较大文档和 token 成本。</li>
+                  <li>风险标签、按风险收紧门禁、执行评审分离需要扩展实现。</li>
+                </ul>
+              </div>
+              <div class="block">
+                <h4>适用场景</h4>
+                <p>绿地项目、规范先行团队、多工具 AI coding 统一、希望把“需求先于代码”制度化的研发组织。</p>
+              </div>
+              <div class="block">
+                <h4>慎用场景</h4>
+                <p>只要极快改一个小 bug，或强监管交付需要现成审计链时，单独使用 Spec Kit 还不够。</p>
+              </div>
+              <div class="rating">
+                <div class="rate-line"><span>审计治理</span><div class="bar"><span style="width: 64%"></span></div><b>3</b></div>
+                <div class="rate-line"><span>上手效率</span><div class="bar"><span style="width: 72%"></span></div><b>3.5</b></div>
+                <div class="rate-line"><span>生态成熟</span><div class="bar"><span style="width: 94%"></span></div><b>5</b></div>
+                <div class="rate-line"><span>企业适配</span><div class="bar"><span style="width: 78%"></span></div><b>4</b></div>
+              </div>
+            </div>
+          </article>
+
+          <article class="scheme bmad">
+            <header>
+              <h3>BMAD Method</h3>
+              <p class="tagline">AI-driven agile development framework，使用专门 Agent、工作流和规划轨道，从分析、规划、架构到故事级实现。</p>
+              <div class="pillbar">
+                <span class="pill">多 Agent</span>
+                <span class="pill">Agile</span>
+                <span class="pill">PRD</span>
+                <span class="pill">Architecture</span>
+              </div>
+            </header>
+            <div class="body">
+              <div class="block">
+                <h4>典型流程</h4>
+                <div class="flow">Analysis → Planning → Solutioning → Implementation，按 Quick / Method / Enterprise 轨道调整深度。</div>
+              </div>
+              <div class="block">
+                <h4>优点</h4>
+                <ul>
+                  <li>角色模型丰富，PM、Architect、Dev、UX、QA 等分工自然。</li>
+                  <li>对产品规划、PRD、架构、story 级开发支持强。</li>
+                  <li>scale-adaptive 思路成熟，能从小修到企业平台切换深度。</li>
+                  <li>社区、文档、模块化生态较完整。</li>
+                </ul>
+              </div>
+              <div class="block">
+                <h4>短板</h4>
+                <ul>
+                  <li>流程和 Agent 多，新人容易先学系统而不是先交付需求。</li>
+                  <li>更像 AI agile 方法框架，不是交付审计 validator。</li>
+                  <li>企业合规证据、部署验收和风险规则需要定制模块补齐。</li>
+                </ul>
+              </div>
+              <div class="block">
+                <h4>适用场景</h4>
+                <p>从 0 到 1 产品、复杂功能规划、跨角色协同、需要产品经理和架构师 Agent 深度参与的项目。</p>
+              </div>
+              <div class="block">
+                <h4>慎用场景</h4>
+                <p>已有明确需求，只需要轻量审计和验证闭环时，BMAD 可能显得偏大。</p>
+              </div>
+              <div class="rating">
+                <div class="rate-line"><span>审计治理</span><div class="bar"><span style="width: 62%"></span></div><b>3</b></div>
+                <div class="rate-line"><span>上手效率</span><div class="bar"><span style="width: 66%"></span></div><b>3</b></div>
+                <div class="rate-line"><span>生态成熟</span><div class="bar"><span style="width: 92%"></span></div><b>5</b></div>
+                <div class="rate-line"><span>企业适配</span><div class="bar"><span style="width: 76%"></span></div><b>4</b></div>
+              </div>
+            </div>
+          </article>
+
+          <article class="scheme agentos">
+            <header>
+              <h3>Agent OS</h3>
+              <p class="tagline">轻量系统，用于发现、组织并注入团队标准，帮助 AI 工具按项目习惯生成更好的 spec 和计划。</p>
+              <div class="pillbar">
+                <span class="pill">Standards</span>
+                <span class="pill">Spec Shaping</span>
+                <span class="pill">Profiles</span>
+                <span class="pill">轻量</span>
+              </div>
+            </header>
+            <div class="body">
+              <div class="block">
+                <h4>典型流程</h4>
+                <div class="flow">Plan Product → Discover Standards → Inject Standards → Shape Spec → 交给 IDE Plan Mode 实现。</div>
+              </div>
+              <div class="block">
+                <h4>优点</h4>
+                <ul>
+                  <li>专注“团队如何写代码”的标准注入，边界清晰。</li>
+                  <li>全局 profile 与项目安装分离，适合多项目复用。</li>
+                  <li>discover-standards 能把隐性约定变成显性文档。</li>
+                  <li>相对轻量，不强行接管整个开发流程。</li>
+                </ul>
+              </div>
+              <div class="block">
+                <h4>短板</h4>
+                <ul>
+                  <li>v3 更聚焦标准和 spec shaping，弱化实现编排。</li>
+                  <li>不提供完整 CI、部署、验收审计链。</li>
+                  <li>对需要硬门禁和证据目录的企业交付需要叠加其他机制。</li>
+                </ul>
+              </div>
+              <div class="block">
+                <h4>适用场景</h4>
+                <p>已有开发流程，但 AI 经常不遵守项目约定；希望把编码规范、架构偏好和项目知识注入 Agent。</p>
+              </div>
+              <div class="block">
+                <h4>慎用场景</h4>
+                <p>团队还没有稳定标准，或需要交付审计而不只是上下文注入时，单独使用 Agent OS 不够。</p>
+              </div>
+              <div class="rating">
+                <div class="rate-line"><span>审计治理</span><div class="bar"><span style="width: 48%"></span></div><b>2</b></div>
+                <div class="rate-line"><span>上手效率</span><div class="bar"><span style="width: 80%"></span></div><b>4</b></div>
+                <div class="rate-line"><span>生态成熟</span><div class="bar"><span style="width: 76%"></span></div><b>4</b></div>
+                <div class="rate-line"><span>企业适配</span><div class="bar"><span style="width: 66%"></span></div><b>3</b></div>
+              </div>
+            </div>
+          </article>
+
+          <article class="scheme kiro">
+            <header>
+              <h3>Kiro Specs</h3>
+              <p class="tagline">IDE 原生 specs、steering 和 hooks，面向从需求、设计、任务到执行的结构化开发体验。</p>
+              <div class="pillbar">
+                <span class="pill">IDE 原生</span>
+                <span class="pill">Specs</span>
+                <span class="pill">Steering</span>
+                <span class="pill">Hooks</span>
+              </div>
+            </header>
+            <div class="body">
+              <div class="block">
+                <h4>典型流程</h4>
+                <div class="flow">Requirements / Bug Analysis → Design → Tasks → Task Execution，可结合 steering 与 hooks。</div>
+              </div>
+              <div class="block">
+                <h4>优点</h4>
+                <ul>
+                  <li>IDE 内建体验好，新人不必拼装多个命令行工具。</li>
+                  <li>requirements、design、tasks 三件套清晰。</li>
+                  <li>支持 task execution 状态、并行任务分析、steering 常驻上下文。</li>
+                  <li>hooks 可自动化部分重复动作。</li>
+                </ul>
+              </div>
+              <div class="block">
+                <h4>短板</h4>
+                <ul>
+                  <li>绑定 Kiro IDE，跨工具复用不如纯文件插件灵活。</li>
+                  <li>企业自己的审计格式、风险规则和最终交付证据仍需外部约束。</li>
+                  <li>对已有 IDE 标准化团队，迁移成本需要评估。</li>
+                </ul>
+              </div>
+              <div class="block">
+                <h4>适用场景</h4>
+                <p>团队愿意统一到 Kiro IDE，希望 specs、任务执行、steering 和 hooks 都有一体化体验。</p>
+              </div>
+              <div class="block">
+                <h4>慎用场景</h4>
+                <p>多 IDE、多 Agent 混合团队，或要求流程资产完全工具无关的企业交付。</p>
+              </div>
+              <div class="rating">
+                <div class="rate-line"><span>审计治理</span><div class="bar"><span style="width: 58%"></span></div><b>3</b></div>
+                <div class="rate-line"><span>上手效率</span><div class="bar"><span style="width: 86%"></span></div><b>4.5</b></div>
+                <div class="rate-line"><span>生态成熟</span><div class="bar"><span style="width: 72%"></span></div><b>3.5</b></div>
+                <div class="rate-line"><span>企业适配</span><div class="bar"><span style="width: 70%"></span></div><b>3.5</b></div>
+              </div>
+            </div>
+          </article>
+
+          <article class="scheme taskmaster">
+            <header>
+              <h3>Task Master</h3>
+              <p class="tagline">AI task management 工具，把 PRD 解析成任务、依赖、优先级、测试策略，并支持复杂度分析和 MCP 调用。</p>
+              <div class="pillbar">
+                <span class="pill">PRD → Tasks</span>
+                <span class="pill">MCP</span>
+                <span class="pill">依赖管理</span>
+                <span class="pill">复杂度分析</span>
+              </div>
+            </header>
+            <div class="body">
+              <div class="block">
+                <h4>典型流程</h4>
+                <div class="flow">写 PRD → parse-prd → tasks.json → analyze-complexity → expand → next_task → set_task_status。</div>
+              </div>
+              <div class="block">
+                <h4>优点</h4>
+                <ul>
+                  <li>任务拆解、依赖、状态跟踪能力强。</li>
+                  <li>适合把大需求拆成可执行小步，避免 Agent 漫游。</li>
+                  <li>MCP 工具覆盖任务读取、更新、扩展、复杂度分析、依赖校验。</li>
+                  <li>可以作为 Harness 或 Spec Kit 后面的任务执行管理层。</li>
+                </ul>
+              </div>
+              <div class="block">
+                <h4>短板</h4>
+                <ul>
+                  <li>核心是任务管理，不是需求评审、代码评审或交付审计框架。</li>
+                  <li>PRD 质量决定任务质量，前置需求澄清仍要靠团队。</li>
+                  <li>验证证据、部署回滚、用户确认需要外部流程补齐。</li>
+                </ul>
+              </div>
+              <div class="block">
+                <h4>适用场景</h4>
+                <p>已有 PRD，想快速拆任务、排依赖、看复杂度、驱动 Agent 按下一任务推进的团队。</p>
+              </div>
+              <div class="block">
+                <h4>慎用场景</h4>
+                <p>需求本身还模糊，或要求强审计、强评审、强验证闭环时，不能只靠任务拆解。</p>
+              </div>
+              <div class="rating">
+                <div class="rate-line"><span>审计治理</span><div class="bar"><span style="width: 42%"></span></div><b>2</b></div>
+                <div class="rate-line"><span>上手效率</span><div class="bar"><span style="width: 76%"></span></div><b>4</b></div>
+                <div class="rate-line"><span>生态成熟</span><div class="bar"><span style="width: 74%"></span></div><b>3.5</b></div>
+                <div class="rate-line"><span>企业适配</span><div class="bar"><span style="width: 56%"></span></div><b>3</b></div>
+              </div>
+            </div>
+          </article>
+        </div>
+      </div>
+    </section>
+
+    <section class="section">
+      <h2>关键维度速览</h2>
+      <table>
+        <thead>
+          <tr>
+            <th>维度</th>
+            <th>Harness Engineering</th>
+            <th>市场方案普遍表现</th>
+            <th>建议</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>需求到交付链路</td>
+            <td>覆盖 10 阶段审计链，并含部署验证、用户确认、最终审计。</td>
+            <td>Spec Kit、Spec Workflow、Kiro 更集中在 spec、design、tasks、implementation。</td>
+            <td>保留全链路定位，不要退化成另一个 spec 生成工具。</td>
+          </tr>
+          <tr>
+            <td>风险自适应</td>
+            <td>内置 `riskTags`、`gateProfile`、`riskRules` 和最小验证命令计算。</td>
+            <td>BMAD 有 scale-adaptive，Spec Kit 有 extensions，但风险标签到强制门禁通常需要定制。</td>
+            <td>把风险配置做成 Harness 的招牌能力，继续增强可视化和自动校验。</td>
+          </tr>
+          <tr>
+            <td>执行与评审分离</td>
+            <td>流程明确要求实现 Agent 与评审 Agent 或评审流程分离。</td>
+            <td>BMAD 有多角色，部分工具有 review 扩展，但不一定形成交付硬约束。</td>
+            <td>继续强化“谁实现、谁评审、证据在哪里”的追踪。</td>
+          </tr>
+          <tr>
+            <td>新人上手</td>
+            <td>中文命令友好，但插件和命令体验仍需打磨。</td>
+            <td>Kiro IDE 原生体验最好，Spec Workflow MCP dashboard 可视化好，BMAD 文档丰富。</td>
+            <td>优先做 `harness install`、`harness doctor`、`harness next` 和中文交互向导。</td>
+          </tr>
+          <tr>
+            <td>验证闭环</td>
+            <td>有 validator、CI 证据、deploy-result、acceptance audit。</td>
+            <td>多数方案会生成任务或测试建议，但未必强制落地执行证据。</td>
+            <td>继续把“没有验证证据不得交付”做成机器可检查规则。</td>
+          </tr>
+          <tr>
+            <td>生态成熟度</td>
+            <td>第一版本地插件，生态刚起步。</td>
+            <td>Spec Kit、BMAD、Spec Workflow MCP 已有较高社区关注和工具集成。</td>
+            <td>先把 Harness 定义为可叠加治理层，兼容这些工具的产物。</td>
+          </tr>
+        </tbody>
+      </table>
+    </section>
+
+    <section class="section">
+      <h2>组合使用建议</h2>
+      <div class="fit-grid">
+        <div class="fit-card">
+          <h3>Harness + Spec Kit</h3>
+          <p>用 Spec Kit 生成 spec、plan、tasks；用 Harness 做风险分级、评审分离、CI、部署验证和最终交付审计。适合规范驱动和企业交付兼顾的团队。</p>
+        </div>
+        <div class="fit-card">
+          <h3>Harness + BMAD</h3>
+          <p>用 BMAD 做产品、角色、架构和 story 规划；用 Harness 接住每个 story 的证据、验证和验收。适合从 0 到 1 的复杂平台项目。</p>
+        </div>
+        <div class="fit-card">
+          <h3>Harness + Task Master</h3>
+          <p>用 Task Master 管任务、依赖、复杂度和下一步；用 Harness 管门禁、评审、验证和交付审计。适合已经有 PRD 的持续交付团队。</p>
+        </div>
+      </div>
+    </section>
+
+    <section class="section">
+      <h2>对 Harness Engineering 的产品化建议</h2>
+      <table>
+        <thead>
+          <tr>
+            <th>优先级</th>
+            <th>建议</th>
+            <th>原因</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>P0</td>
+            <td>把安装体验收敛成 `harness install` 或单行 `npx`。</td>
+            <td>当前对新人仍像“复制 starter 资产”，比成熟工具安装心智更高。</td>
+          </tr>
+          <tr>
+            <td>P0</td>
+            <td>新增 `harness doctor`、`harness next &lt;change-id&gt;`、`harness audit &lt;change-id&gt;`。</td>
+            <td>新人最常问的是“现在该做什么”和“能不能交付”。</td>
+          </tr>
+          <tr>
+            <td>P1</td>
+            <td>把风险配置结果输出为结构化 JSON 和 Markdown 双格式。</td>
+            <td>方便 validator、dashboard、CI 和其他工具读取。</td>
+          </tr>
+          <tr>
+            <td>P1</td>
+            <td>支持导入 Spec Kit、BMAD、Task Master 的产物。</td>
+            <td>把 Harness 定位成上层治理层，而不是和成熟 spec 工具硬拼。</td>
+          </tr>
+          <tr>
+            <td>P2</td>
+            <td>做一个只读 dashboard 展示 change 证据完整度。</td>
+            <td>Spec Workflow MCP 和 Kiro 的可视化优势明显，Harness 可先从审计可视化切入。</td>
+          </tr>
+        </tbody>
+      </table>
+    </section>
+
+    <section class="section">
+      <h2>来源</h2>
+      <ol class="source-list">
+        <li>本仓库 Harness Engineering 插件资产：`plugins/harness-engineering/.codex-plugin/plugin.json`、`assets/starter/.harness/config/pipeline.json`、`README.md`。</li>
+        <li><a href="https://github.com/Pimzino/spec-workflow-mcp">Pimzino/spec-workflow-mcp GitHub</a>，用于确认 MCP、dashboard、VSCode extension、GPL-3.0 等信息。</li>
+        <li><a href="https://www.npmjs.com/package/%40pimzino/spec-workflow-mcp">npm: @pimzino/spec-workflow-mcp</a>，用于确认安装包、许可与发布信息。</li>
+        <li><a href="https://github.github.io/spec-kit/">GitHub Spec Kit Documentation</a>，用于确认 Spec → Plan → Tasks → Implement、agent integrations 等能力。</li>
+        <li><a href="https://github.com/github/spec-kit">github/spec-kit GitHub</a>，用于确认开源项目、Specify CLI、extensions、presets 和 MIT license。</li>
+        <li><a href="https://docs.bmad-method.org/">BMAD Method Documentation</a>，用于确认 AI-driven agile、专门 Agent 和整体方法定位。</li>
+        <li><a href="https://docs.bmad-method.org/reference/workflow-map/">BMAD Workflow Map</a>，用于确认 Analysis、Planning、Solutioning、Implementation 和 Quick Flow。</li>
+        <li><a href="https://docs.bmad-method.org/reference/agents/">BMAD Agents</a>，用于确认 Analyst、PM、Architect、Developer、UX、Technical Writer 等角色。</li>
+        <li><a href="https://buildermethods.com/agent-os/installation">Agent OS Installation</a>，用于确认 base installation 与 project installation 的两段式结构。</li>
+        <li><a href="https://buildermethods.com/agent-os/create-spec">Agent OS Create Spec</a>，用于确认 spec.md、tasks.md、verification 等产物。</li>
+        <li><a href="https://buildermethods.com/agent-os/discover-standards">Agent OS Discover Standards</a>，用于确认从代码库提取团队标准。</li>
+        <li><a href="https://kiro.dev/docs/specs/">Kiro Specs Documentation</a>，用于确认 requirements 或 bugfix、design、tasks 三阶段与任务执行。</li>
+        <li><a href="https://kiro.dev/docs/steering/">Kiro Steering Documentation</a>，用于确认 steering 文件、作用域和 inclusion modes。</li>
+        <li><a href="https://docs.task-master.dev/getting-started/quick-start/prd-quick">Task Master PRD Creation and Parsing</a>，用于确认 PRD 到 tasks.json 的流程。</li>
+        <li><a href="https://docs.task-master.dev/capabilities/mcp">Task Master MCP Tools</a>，用于确认 parse_prd、expand_task、complexity_report、validate_dependencies 等工具。</li>
+      </ol>
+      <p class="footer">
+        说明：本页为方案评估材料。外部项目功能、许可、安装方式和社区状态可能变化，正式采购或企业推广前应再次核对各项目官方文档和许可证。
+      </p>
+    </section>
+  </main>
+</body>
+</html>
